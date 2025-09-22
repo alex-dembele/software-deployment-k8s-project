@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-ingress
+  namespace: {{ .Values.namespace | default "conference" }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.class | default "nginx" }}
+spec:
+  rules:
+  - host: {{ .Values.ingress.host | default "conference.local" }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-frontend
+            port:
+              number: 80
+# Explication: Ingress pour routing externe vers frontend. Annotations pour controller (e.g., NGINX). Host templatisé (ch.3).

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-c4p
+  namespace: {{ .Values.namespace | default "conference" }}
+spec:
+  replicas: {{ .Values.c4p.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: c4p
+  template:
+    metadata:
+      labels:
+        app: c4p
+    spec:
+      containers:
+      - name: c4p
+        image: "{{ .Values.c4p.image.repository }}:{{ .Values.c4p.image.tag | default "latest" }}"
+        ports:
+          - containerPort: 3002
+        envFrom:
+          - configMapRef:
+              name: {{ .Release.Name }}-app-config
+          - secretRef:
+              name: {{ .Release.Name }}-db-secret
+        resources:
+          limits:
+            cpu: {{ .Values.c4p.resources.limits.cpu | default "300m" }}
+            memory: {{ .Values.c4p.resources.limits.memory | default "256Mi" }}
+          requests:
+            cpu: {{ .Values.c4p.resources.requests.cpu | default "100m" }}
+            memory: {{ .Values.c4p.resources.requests.memory | default "128Mi" }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3002
+          initialDelaySeconds: 5
+          periodSeconds: 5
+# Explication: Deployment pour c4p-service (avec PostgreSQL, ch.2).

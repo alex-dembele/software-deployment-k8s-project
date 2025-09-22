@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-app-config
+  namespace: {{ .Values.namespace | default "conference" }}
+data:
+  REDIS_URL: {{ .Values.redis.url | default "redis://redis:6379" }}
+  POSTGRES_URL: {{ .Values.postgres.url | default "postgres://postgres:5432/db" }}
+  AGENDA_SERVICE_URL: "http://{{ .Release.Name }}-agenda:3001"
+  C4P_SERVICE_URL: "http://{{ .Release.Name }}-c4p:3002"
+  NOTIFICATIONS_SERVICE_URL: "http://{{ .Release.Name }}-notifications:3003"
+# Explication: Ce ConfigMap externalise les configs non-sensibles (URLs services/DB). Utilisez {{ .Values }} pour personnaliser via values.yaml (best practice 12-factor app, ch.1 du livre).

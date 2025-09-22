@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-agenda
+  namespace: {{ .Values.namespace | default "conference" }}
+spec:
+  replicas: {{ .Values.agenda.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: agenda
+  template:
+    metadata:
+      labels:
+        app: agenda
+    spec:
+      containers:
+      - name: agenda
+        image: "{{ .Values.agenda.image.repository }}:{{ .Values.agenda.image.tag | default "latest" }}"
+        ports:
+          - containerPort: 3001
+        envFrom:
+          - configMapRef:
+              name: {{ .Release.Name }}-app-config
+          - secretRef:
+              name: {{ .Release.Name }}-db-secret
+        resources:
+          limits:
+            cpu: {{ .Values.agenda.resources.limits.cpu | default "300m" }}
+            memory: {{ .Values.agenda.resources.limits.memory | default "256Mi" }}
+          requests:
+            cpu: {{ .Values.agenda.resources.requests.cpu | default "100m" }}
+            memory: {{ .Values.agenda.resources.requests.memory | default "128Mi" }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+# Explication: Deployment pour agenda-service (avec Redis). Similaire au frontend, adapté pour backend (ch.2 pour infra avec Crossplane/Helm).

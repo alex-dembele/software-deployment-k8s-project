@@ -1,0 +1,4 @@
+apiVersion: v2
+name: conference-app
+description: Helm chart for Conference App
+version: 0.1.0

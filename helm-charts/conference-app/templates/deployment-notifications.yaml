@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-notifications
+  namespace: {{ .Values.namespace | default "conference" }}
+spec:
+  replicas: {{ .Values.notifications.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: notifications
+  template:
+    metadata:
+      labels:
+        app: notifications
+    spec:
+      containers:
+      - name: notifications
+        image: "{{ .Values.notifications.image.repository }}:{{ .Values.notifications.image.tag | default "latest" }}"
+        ports:
+          - containerPort: 3003
+        envFrom:
+          - configMapRef:
+              name: {{ .Release.Name }}-app-config
+          - secretRef:
+              name: {{ .Release.Name }}-db-secret
+        resources:
+          limits:
+            cpu: {{ .Values.notifications.resources.limits.cpu | default "200m" }}
+            memory: {{ .Values.notifications.resources.limits.memory | default "128Mi" }}
+          requests:
+            cpu: {{ .Values.notifications.resources.requests.cpu | default "50m" }}
+            memory: {{ .Values.notifications.resources.requests.memory | default "64Mi" }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3003
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3003
+          initialDelaySeconds: 5
+          periodSeconds: 5
+# Explication: Deployment pour notifications-service (ch.4 pour Knative/Argo Rollouts).

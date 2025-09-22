@@ -1,0 +1,4 @@
+replicas: 2
+image:
+  repository: your-repo
+  tag: latest

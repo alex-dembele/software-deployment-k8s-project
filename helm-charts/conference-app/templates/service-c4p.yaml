@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-c4p
+  namespace: {{ .Values.namespace | default "conference" }}
+spec:
+  type: ClusterIP
+  selector:
+    app: c4p
+  ports:
+    - port: 3002
+      targetPort: 3002
+      protocol: TCP
+# Explication: Service interne pour c4p-service.

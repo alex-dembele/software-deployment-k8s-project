@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-frontend
+  namespace: {{ .Values.namespace | default "conference" }}
+spec:
+  replicas: {{ .Values.frontend.replicas | default 2 }}
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default "latest" }}"
+        ports:
+          - containerPort: 3000
+        envFrom:
+          - configMapRef:
+              name: {{ .Release.Name }}-app-config
+          - secretRef:
+              name: {{ .Release.Name }}-db-secret
+        resources:
+          limits:
+            cpu: {{ .Values.frontend.resources.limits.cpu | default "500m" }}
+            memory: {{ .Values.frontend.resources.limits.memory | default "512Mi" }}
+          requests:
+            cpu: {{ .Values.frontend.resources.requests.cpu | default "100m" }}
+            memory: {{ .Values.frontend.resources.requests.memory | default "128Mi" }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+# Explication: Deployment pour frontend. Replicas pour HA, probes pour health checks (rolling updates, ch.4). Image et resources templatisés pour releases (GitOps avec Argo CD, ch.1).
