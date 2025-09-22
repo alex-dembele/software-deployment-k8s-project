@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Conference App Frontend</title>
+</head>
+<body>
+  <h1>Conference App</h1>
+  <button onclick="fetchAgenda()">Fetch Agenda</button>
+  <div id="agenda"></div>
+  <script>
+    async function fetchAgenda() {
+      try {
+        const response = await fetch('http://agenda-service:3001/agenda'); // Service discovery in K8s
+        const data = await response.json();
+        document.getElementById('agenda').innerText = JSON.stringify(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
